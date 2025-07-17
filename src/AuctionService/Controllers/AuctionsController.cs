@@ -3,6 +3,8 @@ using AuctionService.DTOs;
 using AuctionService.Entities;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using Contracts;
+using MassTransit;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,11 +16,13 @@ public class AuctionsController : ControllerBase
 {
     private readonly AuctionDbContext _context;
     private readonly IMapper _mapper;
+    private readonly IPublishEndpoint _publishEndpoint;
 
-    public AuctionsController(AuctionDbContext context, IMapper mapper)
+    public AuctionsController(AuctionDbContext context, IMapper mapper, IPublishEndpoint publishEndpoint)
     {
         _context = context;
         _mapper = mapper;
+        _publishEndpoint = publishEndpoint;
     }
 
     [HttpGet]
@@ -35,9 +39,9 @@ public class AuctionsController : ControllerBase
             .Include(a => a.Item)
             .OrderBy(a => a.Item.Make)
             .ToListAsync();
-        
+
         return Ok(_mapper.Map<List<AuctionDto>>(auctions));
-        
+
         // return await query.ProjectTo<AuctionDto>(_mapper.ConfigurationProvider).ToListAsync();
     }
 
@@ -66,6 +70,12 @@ public class AuctionsController : ControllerBase
 
         _context.Auctions.Add(auction);
 
+        var newAuctionDto = _mapper.Map<AuctionDto>(auction);
+
+        // Publish the new auction *before* saving changes *****
+        // because we put it in the outbox and they are treated as a transaction
+        await _publishEndpoint.Publish(_mapper.Map<AuctionCreated>(newAuctionDto));
+
         var result = await _context.SaveChangesAsync() > 0;
 
         if (!result)
@@ -74,7 +84,7 @@ public class AuctionsController : ControllerBase
         }
 
         // make sure to return where the newly added it is located
-        return CreatedAtAction(nameof(GetAuctionById), new { auction.Id }, _mapper.Map<AuctionDto>(auction));
+        return CreatedAtAction(nameof(GetAuctionById), new { auction.Id }, newAuctionDto);
     }
 
     [HttpPut("{id}")]
@@ -96,6 +106,9 @@ public class AuctionsController : ControllerBase
         auction.Item.Colour = updateAuctionDto.Colour ?? auction.Item.Colour;
         auction.Item.Mileage = updateAuctionDto.Mileage ?? auction.Item.Mileage;
         auction.Item.Year = updateAuctionDto.Year ?? auction.Item.Year;
+
+        // publish to service bus when auction updated before saving changes
+        await _publishEndpoint.Publish(_mapper.Map<AuctionUpdated>(auction));
 
         var results = await _context.SaveChangesAsync() > 0;
 
@@ -120,6 +133,8 @@ public class AuctionsController : ControllerBase
         // TODO: check the seller == username
 
         _context.Auctions.Remove(auction);
+
+        await _publishEndpoint.Publish<AuctionDeleted>(new { Id = auction.Id.ToString() });
 
         var results = await _context.SaveChangesAsync() > 0;
 
