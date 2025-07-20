@@ -23,6 +23,13 @@ builder.Services.AddMassTransit(configurator =>
     
     configurator.UsingRabbitMq((context, cfg) =>
     {
+        cfg.Host(builder.Configuration["RabbitMq:Host"], "/", hostOptions =>
+        {
+            // specify our hosts here of internal docker networking
+            hostOptions.Username(builder.Configuration.GetValue("RabbitMq:Username", "guest"));
+            hostOptions.Password(builder.Configuration.GetValue("RabbitMq:Password", "guest"));
+        });
+        
         cfg.ReceiveEndpoint("search-auction-created", endpointConfig =>
         {
             endpointConfig.UseMessageRetry(r => r.Interval(5, 100));

@@ -34,7 +34,17 @@ builder.Services.AddMassTransit(configurator =>
     configurator.AddConsumersFromNamespaceContaining<AuctionCreatedFaultConsumer>();
     configurator.SetEndpointNameFormatter(new KebabCaseEndpointNameFormatter("auction", false));
 
-    configurator.UsingRabbitMq((context, cfg) => { cfg.ConfigureEndpoints(context); });
+    configurator.UsingRabbitMq((context, cfg) =>
+    {
+        cfg.Host(builder.Configuration["RabbitMq:Host"], "/", hostOptions =>
+        {
+            // specify our hosts here of internal docker netrworking
+            hostOptions.Username(builder.Configuration.GetValue("RabbitMq:Username", "guest"));
+            hostOptions.Password(builder.Configuration.GetValue("RabbitMq:Password", "guest"));
+        });
+
+        cfg.ConfigureEndpoints(context);
+    });
 });
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
