@@ -30,7 +30,7 @@ builder.Services.AddMassTransit(configurator =>
         o.UseBusOutbox();
     });
 
-    // Add the consumers
+    // Add the consumers, only 1 consumer from 1 namespace is enough
     configurator.AddConsumersFromNamespaceContaining<AuctionCreatedFaultConsumer>();
     configurator.SetEndpointNameFormatter(new KebabCaseEndpointNameFormatter("auction", false));
 
