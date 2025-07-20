@@ -26,6 +26,7 @@ public class AuctionUpdatedConsumer : IConsumer<AuctionUpdated>
             .ModifyOnly(x => new
                 {
                     x.Colour,
+                    x.Model,
                     x.Make,
                     x.Year,
                     x.Mileage
