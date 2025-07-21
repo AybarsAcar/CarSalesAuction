@@ -5,6 +5,8 @@ type State = {
     pageSize: number;
     pageCount: number;
     searchTerm: string;
+    orderBy: string;
+    filterBy: string;
 }
 
 type Action = {
@@ -17,6 +19,8 @@ const initialState: State = {
     pageSize: 12,
     pageCount: 1,
     searchTerm: "",
+    orderBy: "make",
+    filterBy: "live",
 }
 
 // create the hook to update the parameter's store

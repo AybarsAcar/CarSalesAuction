@@ -9,6 +9,7 @@ import Filters from "@/app/auctions/Filters";
 import {useParamStore} from "@/hooks/useParamStore";
 import {useShallow} from "zustand/react/shallow";
 import qs from "query-string"
+import {EmptyFilter} from "@/app/components/EmptyFilter";
 
 
 export default function Listings() {
@@ -18,7 +19,9 @@ export default function Listings() {
     const params = useParamStore(useShallow(state => ({
         pageNumber: state.pageNumber,
         pageSize: state.pageSize,
-        searchTerm: state.searchTerm
+        searchTerm: state.searchTerm,
+        orderBy: state.orderBy,
+        filterBy: state.filterBy,
     })));
 
     const setParams = useParamStore(state => state.setParams);
@@ -44,21 +47,29 @@ export default function Listings() {
 
     return (
         <>
-            <Filters />
+            <Filters/>
 
-            <div className="grid grid-cols-4 gap-6">
-                {data && data.results.map(auction => (
-                    <AuctionCard key={auction.id} auction={auction}/>
-                ))}
-            </div>
+            {data && data.totalCount === 0 ? (
+                <EmptyFilter showReset={true}/>
+            ) : (
+                <>
+                    <div className="grid grid-cols-4 gap-6">
+                        {data && data.results.map(auction => (
+                            <AuctionCard key={auction.id} auction={auction}/>
+                        ))}
+                    </div>
 
-            <div className="flex justify-center mt-4">
-                <AppPagination
-                    pageChanged={setPageNumber}
-                    currentPage={params.pageNumber}
-                    pageCount={data.pageCount}
-                />
-            </div>
+                    <div className="flex justify-center mt-4">
+                        <AppPagination
+                            pageChanged={setPageNumber}
+                            currentPage={params.pageNumber}
+                            pageCount={data.pageCount}
+                        />
+                    </div>
+                </>
+            )}
+
+
         </>
     );
 }
