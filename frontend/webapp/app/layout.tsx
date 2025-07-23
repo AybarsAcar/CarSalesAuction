@@ -2,6 +2,7 @@ import type {Metadata} from "next";
 import "./globals.css";
 import React from "react";
 import NavBar from "@/app/nav/NavBar";
+import {ToasterProvider} from "@/app/providers/ToasterProvider";
 
 export const metadata: Metadata = {
     title: "Create Next App",
@@ -12,6 +13,7 @@ export default function RootLayout({children,}: Readonly<{ children: React.React
     return (
         <html lang="en">
         <body>
+        <ToasterProvider/>
         <NavBar/>
         <main className="container mx-auto px-5 pt-10">
             {children}
