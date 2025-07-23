@@ -12,6 +12,18 @@ export async function createAuction(data: FieldValues) {
     return await httpClient.post('auctions', data);
 }
 
+export async function getAuctionDetails(id: string): Promise<Auction> {
+    return await httpClient.get(`auctions/${id}`);
+}
+
+export async function updateAuction(data: FieldValues, id: string) {
+    return await httpClient.put(`auctions/${id}`, data);
+}
+
+export async function deleteAuction(id: string) {
+    return await httpClient.del(`auctions/${id}`);
+}
+
 /**
  * Test update http request
  * should return 200 when logged in as bob Pass123$
