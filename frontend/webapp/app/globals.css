@@ -6,3 +6,8 @@
 [role=button], button {
     cursor: pointer;
 }
+
+/*override react date picker width property so it takes up the full width*/
+.react-datepicker-wrapper {
+    width: 100%;
+}

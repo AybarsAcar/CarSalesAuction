@@ -1,16 +1,15 @@
 'use server';
 
 import {Auction, PagedResult} from "@/types";
-import {auth} from "@/auth";
+import {httpClient} from "@/lib/fetchWrapper";
+import {FieldValues} from "react-hook-form";
 
 export async function getData(query: string): Promise<PagedResult<Auction>> {
-    const res = await fetch(`http://localhost:6001/search${query}`);
+    return await httpClient.get(`search${query}`);
+}
 
-    if (!res.ok) {
-        throw new Error("Failed to fetch data");
-    }
-
-    return res.json();
+export async function createAuction(data: FieldValues) {
+    return await httpClient.post('auctions', data);
 }
 
 /**
@@ -24,29 +23,7 @@ export async function updateAuctionTest(): Promise<{ status: number, message: st
         mileage: Math.floor(Math.random() * 10000) + 1,
     }
 
-    const session = await auth();
+    const urlString = "auctions/afbee524-5972-4075-8800-7d1f9d7b0a0c";
 
-    const res = await fetch(
-        `http://localhost:6001/auctions/afbee524-5972-4075-8800-7d1f9d7b0a0c`,
-        {
-            method: 'PUT',
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${session?.accessToken}`,
-            },
-            body: JSON.stringify(data),
-        }
-    );
-
-    if (!res.ok) {
-        return {
-            status: res.status,
-            message: res.statusText,
-        };
-    }
-
-    return {
-        status: res.status,
-        message: res.statusText,
-    }
+    return await httpClient.put(urlString, data);
 }
