@@ -1,3 +1,4 @@
+using BiddingService.Consumers;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using MongoDB.Driver;
@@ -10,6 +11,8 @@ builder.Services.AddControllers();
 // configure RabbitMQ via MassTransit
 builder.Services.AddMassTransit(configurator =>
 {
+    configurator.AddConsumersFromNamespaceContaining<AuctionCreatedConsumer>();
+
     configurator.SetEndpointNameFormatter(new KebabCaseEndpointNameFormatter("bids", false));
 
     configurator.UsingRabbitMq((context, cfg) =>

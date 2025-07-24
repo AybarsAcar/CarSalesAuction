@@ -23,6 +23,7 @@ public class SeedData
         // check if there are any users available in our users
         if (userMgr.Users.Any()) return;
 
+        Console.WriteLine("SEEDING USERS");
 
         var alice = userMgr.FindByNameAsync("alice").Result;
         if (alice == null)
